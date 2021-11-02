@@ -1,0 +1,36 @@
+kind: pipeline
+type: kubernetes
+name: default
+
+trigger:
+  branch:
+    - master
+
+steps:
+  - name: build-docker-image
+    image: plugins/kaniko
+    settings:
+      dockerfile: Dockerfile
+      tags: latest
+      repo: docker.mbict.nl/mbict/befe
+      registry: docker.mbict.nl
+      verbosity: info
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+
+  - name: notify
+    image: plugins/slack
+    settings:
+      webhook:
+        from_secret: slack_webhook
+      channel: dev
+      username: drone
+    when:
+      status:
+        - success
+        - failure
+
+
+
