@@ -51,3 +51,7 @@ func Print(message string) Action {
 		}
 	})
 }
+
+func HandlerCallback(handlerFunc http.HandlerFunc) Action {
+	return ActionFunc(handlerFunc)
+}
