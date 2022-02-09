@@ -407,8 +407,31 @@ func StripPrefix(prefix string) Action {
 	})
 }
 
-func PathEquals(path string) Condition {
+func IsMethod(method ...string) Condition {
 	return ConditionHandler(func(r *http.Request) bool {
-		return r.URL.Path == path
+		for _, m := range method {
+			if r.Method == m {
+				return true
+			}
+		}
+		return false
+	})
+}
+
+func PathEquals(path ...string) Condition {
+	return ConditionHandler(func(r *http.Request) bool {
+		for _, p := range path {
+			if r.URL.Path == p {
+				return true
+			}
+		}
+		return false
+	})
+}
+
+func HasCookie(name string) Condition {
+	return ConditionHandler(func(r *http.Request) bool {
+		_, err := r.Cookie(name)
+		return err == nil
 	})
 }

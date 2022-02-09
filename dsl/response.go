@@ -20,7 +20,7 @@ func WriteResponseBody(body []byte) Action {
 	return responseBody(body)
 }
 
-func WriteJson(data map[string]interface{}) Action {
+func WriteJson(data interface{}) Action {
 	body, _ := json.Marshal(data)
 	return Actions{
 		SetHeader("Content-Type", "application/json"),
