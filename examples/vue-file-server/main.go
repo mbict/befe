@@ -1,29 +1,27 @@
-package vue_file_server
+package main
 
 import (
 	. "github.com/mbict/befe/dsl"
+	. "github.com/mbict/befe/dsl/http"
 )
 
-func Program() Action {
-	fs := FileServer("/home/michael/Projects/befe/examples/vue-file-server/dist/").
+func Program() Expr {
+
+	fs := FileServer("./dist/").
 		AllowDirectoryListing(false).
-		WhenNotFound(NotFound(), WriteResponseBody([]byte("the page does not exist 404 html here")))
+		WhenNotFound(NotFound(), WriteResponse([]byte("the page does not exist 404 html here")))
 
 	defaultIndex := fs.ServeFile("index.html")
 
-	//we have history mode for vue application and we allow a few specific paths directly
-	//you could also directly use the fileServer and always server the index.html on the notFound
-	//but i wanted that non-existing paths should return a real 404 from the server.
-	router := Http()
+	//We have history mode on for the vue route application, and we allow to navigate directly to a specific page.
+	//You could also directly use the fileServer and always serve the index.html on the notFound,
+	//but I wanted that non-existing paths should return a real 404 from the server.
+
+	router := Router()
 	{
-		router.Get("/accounts/*filepath").Default(defaultIndex)
-		router.Get("/accounts").Default(defaultIndex)
-		router.Get("/users/*filepath").Default(defaultIndex)
-		router.Get("/users").Default(defaultIndex)
-		router.Get("/financial/*filepath").Default(defaultIndex)
-		router.Get("/financial").Default(defaultIndex)
-		router.Get("/settings/*filepath").Default(defaultIndex)
-		router.Get("/settings").Default(defaultIndex)
+		router.Get("/about").Then(defaultIndex)
+		router.Get("/test/*filepath").Then(defaultIndex)
+		router.Get("/test").Then(defaultIndex)
 
 		router.OnNotFound(fs)
 	}

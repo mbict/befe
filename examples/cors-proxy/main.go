@@ -2,11 +2,13 @@ package main
 
 import (
 	. "github.com/mbict/befe/dsl"
+	. "github.com/mbict/befe/dsl/http"
 )
 
-func Program() Action {
+// this example of the reverse proxy can modify and transform the response body
+func Program() Expr {
 	Cors := CORS().AllowAll()
-	Accept := ReverseProxy(FromEnv("API_URI"))
+	Accept := ReverseProxy(FromEnvWithDefault("API_URI", "http://localhost:8081"))
 
-	return With(Cors, Accept)
+	return With(Cors, Accept, Transform(IncludePath("abc")))
 }

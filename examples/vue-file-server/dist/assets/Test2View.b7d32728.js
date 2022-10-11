@@ -1,0 +1,1 @@
+import{_ as e,o as t,c as s,a as c}from"./index.c3109d49.js";const o={},n=c("h1",null,"This is the wildcard test route /test/*",-1),r=[n];function a(_,i){return t(),s("div",null,r)}const l=e(o,[["render",a]]);export{l as default};

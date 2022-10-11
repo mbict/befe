@@ -1,32 +1,20 @@
 package dsl
 
-import "net/http"
+import (
+	"context"
+	"github.com/mbict/befe/expr"
+	"net/http"
+)
 
-func Or(conditions ...Condition) Condition {
-	h := func(r *http.Request) bool {
-		return false
-	}
-
-	for i := len(conditions); i > 0; i-- {
-		cond := conditions[i-1].BuildCondition()
-		next := h
-		h = func(r *http.Request) bool {
-			if cond(r) == true {
-				return true
-			}
-			return next(r)
-		}
-	}
-	return ConditionHandler(h)
+type breaker struct {
 }
 
-func And(conditions ...Condition) Condition {
-	return Conditions(conditions)
+func (b breaker) BuildHandler(_ context.Context, _ expr.Handler) expr.Handler {
+	return func(_ http.ResponseWriter, _ *http.Request) (bool, error) {
+		return false, nil
+	}
 }
 
-func Not(conditions ...Condition) Condition {
-	h := Conditions(conditions).BuildCondition()
-	return ConditionHandler(func(r *http.Request) bool {
-		return !h(r)
-	})
+func Stop() expr.Action {
+	return &breaker{}
 }

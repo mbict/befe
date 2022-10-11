@@ -1,41 +1,53 @@
 package main
 
 import (
-	"github.com/mbict/befe/dsltest"
-	"github.com/stretchr/testify/suite"
-	"net/http"
+	"context"
+	"github.com/mbict/befe/expr"
+	"github.com/stretchr/testify/assert"
 	"net/http/httptest"
 	"testing"
 )
 
-type DecisionTestSuite struct {
-	dsltest.Suite
-}
+func TestProgram(t *testing.T) {
+	testcases := []struct {
+		scenario string
+		method   string
+		path     string
 
-func TestDecisionSuite(t *testing.T) {
-	suite.Run(t, &DecisionTestSuite{dsltest.NewSuite(Program)})
-}
+		expectedCode     int
+		expectedResponse []byte
+	}{
+		{
+			scenario:         "path foo is accessible",
+			method:           "GET",
+			path:             "/foo",
+			expectedCode:     200,
+			expectedResponse: []byte(`hey you!`),
+		},
+		{
+			scenario:         "any other path should be denied",
+			method:           "GET",
+			path:             "/test",
+			expectedCode:     403,
+			expectedResponse: []byte(`nope, denied!`),
+		},
+	}
 
-func (suite *DecisionTestSuite) TestFooPathAccepted() {
-	req := httptest.NewRequest("GET", "http://localhost/foo", nil)
-	res := suite.Request(req)
+	for _, tc := range testcases {
+		t.Run(tc.scenario, func(t *testing.T) {
 
-	suite.Equal(http.StatusOK, res.Code)
-	suite.Equal(`hey you!`, res.Body.String())
-}
+			rw := httptest.NewRecorder()
+			r := httptest.NewRequest(tc.method, tc.path, nil)
 
-func (suite *DecisionTestSuite) TestDefaultPathDenied() {
-	req := httptest.NewRequest("GET", "http://localhost", nil)
-	res := suite.Request(req)
+			expr.WrapHttpHandler(
+				Program().BuildHandler(context.Background(), nil),
+			).ServeHTTP(rw, r)
 
-	suite.Equal(http.StatusForbidden, res.Code)
-	suite.Equal(`nope, denied!`, res.Body.String())
-}
+			assert.Equal(t, tc.expectedCode, rw.Code)
 
-func (suite *DecisionTestSuite) TestAnyPathDenied() {
-	req := httptest.NewRequest("GET", "http://localhost/test", nil)
-	res := suite.Request(req)
-
-	suite.Equal(http.StatusForbidden, res.Code)
-	suite.Equal(`nope, denied!`, res.Body.String())
+			if tc.expectedResponse != nil {
+				assert.Equal(t, string(tc.expectedResponse), rw.Body.String())
+			}
+		})
+	}
 }

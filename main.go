@@ -6,12 +6,13 @@ import (
 	"flag"
 	"github.com/mbict/befe/buildin"
 	"github.com/mbict/befe/dsl"
+	"github.com/mbict/befe/expr"
 	"github.com/radovskyb/watcher"
 	"github.com/traefik/yaegi/interp"
 	"github.com/traefik/yaegi/stdlib"
-	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"path"
 	"strings"
 	"sync"
@@ -20,7 +21,7 @@ import (
 
 type Program struct {
 	cancelFunc    context.CancelFunc
-	handleRequest dsl.Handler
+	handleRequest expr.Handler
 }
 
 func (p *Program) HandleRequest(rw http.ResponseWriter, r *http.Request) {
@@ -163,20 +164,20 @@ func loadProgram(path string) (*Program, error) {
 		}
 	}
 
-	var handleFunc dsl.Handler
+	var handleFunc expr.Handler
 
 	//check if there is a dsl defined in the program endpoint
 	vDsl, err := interpreter.Eval("main.Program")
-	var program dsl.Action
+	var program dsl.Expr
 	if err != nil {
 		return nil, err
 	}
 
-	programFunc := vDsl.Interface().(func() dsl.Action)
+	programFunc := vDsl.Interface().(func() dsl.Expr)
 	program = programFunc()
 
 	ctx, cancelFunc := context.WithCancel(context.Background())
-	handleFunc = program.BuildHandler(ctx, func(rw http.ResponseWriter, r *http.Request) {})
+	handleFunc = program.BuildHandler(ctx, nil)
 
 	return &Program{
 		cancelFunc:    cancelFunc,
@@ -190,7 +191,7 @@ func loadScript(sourcePath string) (*interp.Interpreter, error) {
 	i.Use(stdlib.Symbols)
 	i.Use(buildin.Symbols)
 
-	dir, err := ioutil.ReadDir(sourcePath)
+	dir, err := os.ReadDir(sourcePath)
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +204,7 @@ func loadScript(sourcePath string) (*interp.Interpreter, error) {
 		}
 
 		log.Printf("loading file : %s", path.Join(sourcePath, fs.Name()))
-		source, err := ioutil.ReadFile(path.Join(sourcePath, fs.Name()))
+		source, err := os.ReadFile(path.Join(sourcePath, fs.Name()))
 		if err != nil {
 			return nil, err
 		}

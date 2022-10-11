@@ -1,0 +1,1 @@
+import{_ as e,o as t,c as s,a as o}from "./index.c3109d49.js";const c={},n=o("h1",null,"This is the main /test route",-1),a=[n];function r(_, i){return t(),s("div",null,a)}const d=e(c,[["render",r]]);export{d as default};

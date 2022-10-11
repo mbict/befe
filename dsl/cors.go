@@ -2,6 +2,7 @@ package dsl
 
 import (
 	"context"
+	. "github.com/mbict/befe/expr"
 	"github.com/rs/cors"
 	"net/http"
 )
@@ -65,8 +66,16 @@ type corsAction struct {
 
 func (c *corsAction) BuildHandler(ctx context.Context, next Handler) Handler {
 	corsHandler := cors.New(c.corsOptions)
-	return func(rw http.ResponseWriter, r *http.Request) {
-		corsHandler.ServeHTTP(rw, r, next)
+	return func(rw http.ResponseWriter, r *http.Request) (bool, error) {
+		corsHandler.HandlerFunc(rw, r)
+		if r.Method == http.MethodOptions && r.Header.Get("Access-Control-Request-Method") != "" {
+			return true, nil
+		}
+
+		if next == nil {
+			return true, nil
+		}
+		return next(rw, r)
 	}
 }
 

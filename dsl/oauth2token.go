@@ -2,6 +2,7 @@ package dsl
 
 import (
 	"context"
+	. "github.com/mbict/befe/expr"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
 	"log"
@@ -57,22 +58,19 @@ func (o *oauthClientToken) WhenError(actions ...Action) OAuthClientToken {
 }
 
 func (o *oauthClientToken) BuildHandler(ctx context.Context, next Handler) Handler {
-	deniedHandler := o.deniedActions.BuildHandler(ctx, emptyHandler)
-	errorHandler := o.errorActions.BuildHandler(ctx, emptyHandler)
-	return func(rw http.ResponseWriter, r *http.Request) {
+	deniedHandler := o.deniedActions.BuildHandler(ctx, nil)
+	errorHandler := o.errorActions.BuildHandler(ctx, nil)
+	return func(rw http.ResponseWriter, r *http.Request) (bool, error) {
 		t, err := o.tokenSource.Token()
 
 		if err != nil {
 			switch err.Error() {
 			case "exp not satisfied":
-				deniedHandler(rw, r)
-				return
+				return deniedHandler(rw, r)
 			default:
-				log.Printf("unkown error decoding jwt token :%v", err)
-				//deniedHandler(rw, r)
+				log.Printf("unkown error decoding token :%v", err)
 			}
-			errorHandler(rw, r)
-			return
+			return errorHandler(rw, r)
 		}
 
 		//save the token in the context
@@ -83,21 +81,39 @@ func (o *oauthClientToken) BuildHandler(ctx context.Context, next Handler) Handl
 			t.SetAuthHeader(r)
 		}
 
-		next(rw, r)
+		if next == nil {
+			return true, nil
+		}
+		return next(rw, r)
 	}
 }
 
 func InjectOAuth2AccessToken() Action {
-	return ActionBuilder(func(_ context.Context, next Handler) Handler {
-		return func(rw http.ResponseWriter, r *http.Request) {
-			t, ok := r.Context().Value(&oauth2TokenContextKey).(*oauth2.Token)
-			if ok {
-				t.SetAuthHeader(r)
-			}
-
-			if next != nil {
-				next(rw, r)
-			}
+	return ActionFunc(func(rw http.ResponseWriter, r *http.Request) (bool, error) {
+		t, ok := r.Context().Value(&oauth2TokenContextKey).(*oauth2.Token)
+		if ok {
+			t.SetAuthHeader(r)
 		}
+		return true, nil
 	})
+}
+
+func OAuth2AccessToken() Valuer {
+	return func(r *http.Request) interface{} {
+		t, ok := r.Context().Value(&oauth2TokenContextKey).(*oauth2.Token)
+		if ok {
+			return t.AccessToken
+		}
+		return ""
+	}
+}
+
+func OAuth2AuthorizationAccessToken() Valuer {
+	return func(r *http.Request) interface{} {
+		t, ok := r.Context().Value(&oauth2TokenContextKey).(*oauth2.Token)
+		if ok {
+			return t.Type() + " " + t.AccessToken
+		}
+		return ""
+	}
 }
