@@ -4,7 +4,13 @@ import (
 	. "github.com/mbict/befe/expr"
 	"github.com/ohler55/ojg/jp"
 	"net/http"
+	"strings"
 )
+
+// ConditionCallback is a wrapper f plain go callbacks that should return a true on a match and false when not
+func ConditionCallback(fn func(req *http.Request) bool) ConditionHandler {
+	return NewConditionHandler(ConditionFunc(fn))
+}
 
 // JsonPathHas is a condition to check based on a jsonPath pattern if the received or fetched data (http lookup/ http reverseProxy) has a specific value that matches the pattern
 func JsonPathHas(pattern string) ConditionHandler {
@@ -75,6 +81,28 @@ func PathEquals(path ...string) Condition {
 	})
 }
 
+func PathStartWith(path ...string) Condition {
+	return ConditionFunc(func(r *http.Request) bool {
+		for _, p := range path {
+			if strings.HasPrefix(r.URL.Path, p) {
+				return true
+			}
+		}
+		return false
+	})
+}
+
+func PathEndsWith(path ...string) Condition {
+	return ConditionFunc(func(r *http.Request) bool {
+		for _, p := range path {
+			if strings.HasSuffix(r.URL.Path, p) {
+				return true
+			}
+		}
+		return false
+	})
+}
+
 func HasCookie(name string) Condition {
 	return ConditionFunc(func(r *http.Request) bool {
 		_, err := r.Cookie(name)
@@ -102,10 +130,57 @@ func QueryEquals(name string, values ...string) Condition {
 
 func HasQuery(name string) Condition {
 	return ConditionFunc(func(r *http.Request) bool {
-
 		if _, ok := r.URL.Query()[name]; ok {
 			return true
 		}
 		return false
 	})
+}
+
+// Any of the conditions test true, then the condition is met
+// Works like an OR gate
+func Any(conditions ...Condition) Condition {
+	next := func(r *http.Request) bool {
+		return false
+	}
+	for _, condition := range conditions {
+		fn := condition.BuildCondition()
+		c := next
+		next = func(r *http.Request) bool {
+			if fn(r) == true {
+				return true
+			}
+			return c(r)
+		}
+	}
+	return ConditionFunc(next)
+}
+
+// Or is an alias for Any
+func Or(conditions ...Condition) Condition {
+	return Any(conditions...)
+}
+
+// All the conditions must test true for this condition to be true
+// Works like an AND gate
+func All(conditions ...Condition) Condition {
+	next := func(r *http.Request) bool {
+		return true
+	}
+	for _, condition := range conditions {
+		fn := condition.BuildCondition()
+		c := next
+		next = func(r *http.Request) bool {
+			if fn(r) == false {
+				return false
+			}
+			return c(r)
+		}
+	}
+	return ConditionFunc(next)
+}
+
+// And is an alias for All
+func And(conditions ...Condition) Condition {
+	return All(conditions...)
 }
