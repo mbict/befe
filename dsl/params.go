@@ -36,3 +36,10 @@ func ParamFromQuery(paramName string, queryParamName string) expr.Param {
 func ParamFromJsonPath(paramName string, pattern string) expr.Param {
 	return WithParam(paramName, ValueFromJsonPath(pattern))
 }
+
+func DefaultParam(param expr.Param, defaultValuer expr.Valuer) expr.Param {
+	return func(r *http.Request) (string, interface{}) {
+		name, value := param(r)
+		return name, onEmptyDefaultValue(value, defaultValuer, r)
+	}
+}

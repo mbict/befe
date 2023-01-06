@@ -76,3 +76,27 @@ func ValueFromPattern(regex string, valuer expr.Valuer) expr.Valuer {
 		return ""
 	}
 }
+
+func DefaultValue(valuer expr.Valuer, defaultValue expr.Valuer) expr.Valuer {
+	return func(r *http.Request) interface{} {
+		return onEmptyDefaultValue(valuer(r), defaultValue, r)
+	}
+}
+
+func onEmptyDefaultValue(in interface{}, defaultValuer expr.Valuer, r *http.Request) interface{} {
+	switch v := in.(type) {
+	case string:
+		if v != "" {
+			return v
+		}
+	case int:
+		if v != 0 {
+			return v
+		}
+	default:
+		if in != nil {
+			return in
+		}
+	}
+	return defaultValuer(r)
+}
