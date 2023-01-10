@@ -15,6 +15,7 @@ require (
 	github.com/rs/cors v1.8.3
 	github.com/stretchr/testify v1.8.0
 	github.com/traefik/yaegi v0.14.3
+	github.com/vmihailenco/msgpack/v5 v5.3.5
 	go.nhat.io/httpmock v0.9.0
 	golang.org/x/oauth2 v0.4.0
 	google.golang.org/appengine v1.6.7
@@ -43,6 +44,7 @@ require (
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/swaggest/assertjson v1.7.0 // indirect
+	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/yudai/gojsondiff v1.0.0 // indirect
 	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
 	go.nhat.io/matcher/v2 v2.0.0 // indirect

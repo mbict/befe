@@ -21,6 +21,7 @@ type JwtTokenGenerator interface {
 	WithIssuer(string) JwtTokenGenerator
 	WithCustomClaim(string, interface{}) JwtTokenGenerator
 	WithInvalidSigner() JwtTokenGenerator
+	WithInvalidAlgorithm() JwtTokenGenerator
 
 	Generate() string
 	GenerateBearer() string
@@ -28,24 +29,26 @@ type JwtTokenGenerator interface {
 
 func JwtGenerator() JwtTokenGenerator {
 	return &jwtTokenGenerator{
-		audiences:     nil,
-		scopes:        nil,
-		subject:       "",
-		claims:        make(Claims),
-		issuer:        "",
-		isExpired:     false,
-		invalidSigner: false,
+		audiences:        nil,
+		scopes:           nil,
+		subject:          "",
+		claims:           make(Claims),
+		issuer:           "",
+		isExpired:        false,
+		invalidSigner:    false,
+		invalidAlgorithm: false,
 	}
 }
 
 type jwtTokenGenerator struct {
-	isExpired     bool
-	invalidSigner bool
-	audiences     []string
-	scopes        []string
-	subject       string
-	issuer        string
-	claims        Claims
+	isExpired        bool
+	invalidSigner    bool
+	invalidAlgorithm bool
+	audiences        []string
+	scopes           []string
+	subject          string
+	issuer           string
+	claims           Claims
 }
 
 func (j *jwtTokenGenerator) clone() *jwtTokenGenerator {
@@ -76,6 +79,12 @@ func (j *jwtTokenGenerator) IsExpired() JwtTokenGenerator {
 func (j *jwtTokenGenerator) WithInvalidSigner() JwtTokenGenerator {
 	j = j.clone()
 	j.invalidSigner = true
+	return j
+}
+
+func (j *jwtTokenGenerator) WithInvalidAlgorithm() JwtTokenGenerator {
+	j = j.clone()
+	j.invalidAlgorithm = true
 	return j
 }
 
@@ -146,7 +155,12 @@ func (j *jwtTokenGenerator) Generate() string {
 		key.Set(jwk.AlgorithmKey, jwa.RS256)
 	}
 
-	signed, err := jwt.Sign(t, jwa.RS256, key)
+	algo := jwa.RS256
+	if j.invalidAlgorithm == true {
+		algo = jwa.PS256
+	}
+
+	signed, err := jwt.Sign(t, algo, key)
 	if err != nil {
 		panic(fmt.Errorf("failed to sign token: %w", err))
 	}

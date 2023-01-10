@@ -50,7 +50,7 @@ func TestProgram(t *testing.T) {
 			scenario: "bad jwk keys server 500 error",
 			method:   "GET",
 			path:     "/foo",
-			headers:  headers{"Authorization": "Bearer invali.jwt.here"},
+			headers:  headers{"Authorization": jwtTokenGenerator.GenerateBearer()},
 			mockServer: httpmock.New(func(s *httpmock.Server) {
 				s.ExpectGet("/.well-known/jwks.json").ReturnCode(500)
 			}),
@@ -62,7 +62,15 @@ func TestProgram(t *testing.T) {
 			method:       "GET",
 			path:         "/foo",
 			headers:      headers{"Authorization": "Bearer invali.jwt.here"},
-			mockServer:   httpmock.New(jwksMockedServer),
+			expectedCode: 403, //forbidden
+			expectedJson: JSON{"error": "invalid_token"},
+		},
+		{
+			scenario: "invalid jwt token, is signed with wrong algorithm PS256 instead of allowed RS256",
+			method:   "GET",
+			path:     "/foo",
+			headers:  headers{"Authorization": jwtTokenGenerator.WithInvalidAlgorithm().GenerateBearer()},
+			//mockServer:   httpmock.New(jwksMockedServer),
 			expectedCode: 403, //forbidden
 			expectedJson: JSON{"error": "invalid_token"},
 		},
@@ -70,7 +78,7 @@ func TestProgram(t *testing.T) {
 			scenario:     "invalid jwt token, is no signed by jwk set",
 			method:       "GET",
 			path:         "/foo",
-			headers:      headers{"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"},
+			headers:      headers{"Authorization": jwtTokenGenerator.WithInvalidSigner().GenerateBearer()},
 			mockServer:   httpmock.New(jwksMockedServer),
 			expectedCode: 403, //forbidden
 			expectedJson: JSON{"error": "invalid_token"},
@@ -80,7 +88,6 @@ func TestProgram(t *testing.T) {
 			method:       "GET",
 			path:         "/foo",
 			headers:      headers{"Authorization": jwtTokenGenerator.IsExpired().GenerateBearer()},
-			mockServer:   httpmock.New(jwksMockedServer),
 			expectedCode: 403, //forbidden
 			expectedJson: JSON{"error": "expired_token"},
 		},

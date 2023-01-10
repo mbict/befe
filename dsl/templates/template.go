@@ -46,7 +46,17 @@ type HTMLTemplate interface {
 }
 
 func New(options ...Option) HTMLTemplate {
-	t := template.New("").Funcs(sprig.FuncMap())
+	funcMap := sprig.FuncMap()
+
+	funcMap["toHTML"] = func(s string) template.HTML {
+		return template.HTML(s)
+	}
+
+	funcMap["toJS"] = func(s string) template.JS {
+		return template.JS(s)
+	}
+
+	t := template.New("").Funcs(funcMap)
 	for _, option := range options {
 		option(t)
 	}

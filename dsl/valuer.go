@@ -13,6 +13,12 @@ func String(value string) expr.Valuer {
 	}
 }
 
+func Host() expr.Valuer {
+	return func(r *http.Request) interface{} {
+		return r.Host
+	}
+}
+
 func ValueFromEnv(name string) expr.Valuer {
 	return func(r *http.Request) interface{} {
 		return FromEnv(name)

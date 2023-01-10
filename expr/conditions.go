@@ -13,13 +13,13 @@ func (c Conditions) BuildHandler(ctx context.Context, next Handler) Handler {
 	panic("implement me")
 }
 
-func (c Conditions) BuildCondition() ConditionFunc {
+func (c Conditions) BuildCondition(ctx context.Context) ConditionFunc {
 	h := func(r *http.Request) bool {
 		return true
 	}
 
 	for i := len(c); i > 0; i-- {
-		cond := c[i-1].BuildCondition()
+		cond := c[i-1].BuildCondition(ctx)
 		next := h
 		h = func(r *http.Request) bool {
 			if cond(r) == false {

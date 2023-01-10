@@ -5,14 +5,20 @@ import (
 	"net/http"
 )
 
+type BuildConditionFunc func(c context.Context) ConditionFunc
+
+func (c BuildConditionFunc) BuildCondition(ctx context.Context) ConditionFunc {
+	return c(ctx)
+}
+
 type ConditionFunc func(r *http.Request) bool
 
-func (c ConditionFunc) BuildCondition() ConditionFunc {
+func (c ConditionFunc) BuildCondition(_ context.Context) ConditionFunc {
 	return c
 }
 
 type Condition interface {
-	BuildCondition() ConditionFunc
+	BuildCondition(context.Context) ConditionFunc
 }
 
 type ConditionHandler interface {
@@ -46,7 +52,7 @@ func NewConditionHandler(condition Condition) ConditionHandler {
 }
 
 func (c *conditionHandler) BuildHandler(ctx context.Context, next Handler) Handler {
-	cond := c.Condition.BuildCondition()
+	cond := c.Condition.BuildCondition(ctx)
 	handler := c.actions.BuildHandler(ctx, next)         //<- on purpose that next is chained
 	elseHandler := c.elseActions.BuildHandler(ctx, next) //<- on purpose that next is chained
 

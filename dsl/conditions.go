@@ -1,6 +1,7 @@
 package dsl
 
 import (
+	"context"
 	. "github.com/mbict/befe/expr"
 	"github.com/ohler55/ojg/jp"
 	"net/http"
@@ -140,20 +141,22 @@ func HasQuery(name string) Condition {
 // Any of the conditions test true, then the condition is met
 // Works like an OR gate
 func Any(conditions ...Condition) Condition {
-	next := func(r *http.Request) bool {
-		return false
-	}
-	for _, condition := range conditions {
-		fn := condition.BuildCondition()
-		c := next
-		next = func(r *http.Request) bool {
-			if fn(r) == true {
-				return true
-			}
-			return c(r)
+	return BuildConditionFunc(func(ctx context.Context) ConditionFunc {
+		next := func(r *http.Request) bool {
+			return false
 		}
-	}
-	return ConditionFunc(next)
+		for _, condition := range conditions {
+			fn := condition.BuildCondition(ctx)
+			c := next
+			next = func(r *http.Request) bool {
+				if fn(r) == true {
+					return true
+				}
+				return c(r)
+			}
+		}
+		return next
+	})
 }
 
 // Or is an alias for Any
@@ -164,23 +167,35 @@ func Or(conditions ...Condition) Condition {
 // All the conditions must test true for this condition to be true
 // Works like an AND gate
 func All(conditions ...Condition) Condition {
-	next := func(r *http.Request) bool {
-		return true
-	}
-	for _, condition := range conditions {
-		fn := condition.BuildCondition()
-		c := next
-		next = func(r *http.Request) bool {
-			if fn(r) == false {
-				return false
-			}
-			return c(r)
+	return BuildConditionFunc(func(ctx context.Context) ConditionFunc {
+		next := func(r *http.Request) bool {
+			return true
 		}
-	}
-	return ConditionFunc(next)
+		for _, condition := range conditions {
+			fn := condition.BuildCondition(ctx)
+			c := next
+			next = func(r *http.Request) bool {
+				if fn(r) == false {
+					return false
+				}
+				return c(r)
+			}
+		}
+		return next
+	})
 }
 
 // And is an alias for All
 func And(conditions ...Condition) Condition {
 	return All(conditions...)
+}
+
+// Not negates a condition
+func Not(condition Condition) Condition {
+	return BuildConditionFunc(func(ctx context.Context) ConditionFunc {
+		cond := condition.BuildCondition(ctx)
+		return func(r *http.Request) bool {
+			return !cond(r)
+		}
+	})
 }

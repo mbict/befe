@@ -23,7 +23,7 @@ type decisionTree struct {
 func (d *decisionTree) BuildHandler(ctx context.Context, next Handler) Handler {
 	h := d.elseActions.BuildHandler(ctx, next) // <-- we are nesting next here on purpose
 	for i := len(d.decisions); i > 0; i-- {
-		cond := d.decisions[i-1].BuildCondition()
+		cond := d.decisions[i-1].BuildCondition(ctx)
 		act := d.decisions[i-1].BuildHandler(ctx, next) // <-- we are nesting next here on purpose
 		nxt := h
 		h = func(rw http.ResponseWriter, r *http.Request) (bool, error) {

@@ -10,10 +10,11 @@ func Program() Expr {
 	frontend := ReverseProxy(FromEnvWithDefault("FRONTEND_URI", "http://localhost:3000"))
 	cors := CORS().AllowAll()
 
-	sso := oidc.SingleSignon(
+	sso := oidc.SingleSignOn(
 		FromEnvWithDefault("BACKEND_URI", "http://localhost:8080"),
 		"webapp",
-		"secret")
+		"secret",
+		"http://localhost:8000")
 
 	return With(cors, sso, frontend)
 }

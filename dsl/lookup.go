@@ -14,7 +14,7 @@ type lookup struct {
 
 func (l *lookup) BuildHandler(ctx context.Context, next expr.Handler) expr.Handler {
 
-	conditions := l.conditions.BuildCondition()
+	conditions := l.conditions.BuildCondition(ctx)
 	failureHandler := l.onFail.BuildHandler(ctx, nil)
 
 	l.promise.OnSuccess(expr.ActionFunc(func(rw http.ResponseWriter, r *http.Request) (bool, error) {

@@ -1,8 +1,8 @@
 package jwt
 
 import (
+	"github.com/mbict/befe/dsl/jwt/jwtoken"
 	. "github.com/mbict/befe/expr"
-	"github.com/mbict/befe/utils/token"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -10,7 +10,7 @@ import (
 
 func HasJwtClaim(name string, values ...string) Condition {
 	return ConditionFunc(func(r *http.Request) bool {
-		t, ok := r.Context().Value(&jwtContextKey).(*token.JwtToken)
+		t, ok := jwtoken.FromContext(r.Context())
 		if !ok {
 			return false
 		}
@@ -68,7 +68,7 @@ func HasJwtScopes(scopes ...string) Condition {
 	}
 
 	return ConditionFunc(func(r *http.Request) bool {
-		t, ok := r.Context().Value(&jwtContextKey).(*token.JwtToken)
+		t, ok := jwtoken.FromContext(r.Context())
 		if !ok {
 			return false
 		}
@@ -114,12 +114,12 @@ func HasJwtScopes(scopes ...string) Condition {
 // Global matching is possible matching api://test/* will match api://test/1234
 func HasJwtAudience(audiences ...string) Condition {
 	return ConditionFunc(func(r *http.Request) bool {
-		t, ok := r.Context().Value(&jwtContextKey).(*token.JwtToken)
+		t, ok := jwtoken.FromContext(r.Context())
 		if !ok {
 			return false
 		}
 
-		for _, audience := range t.Audience() {
+		for _, audience := range t.Audience {
 			for _, audienceMatch := range audiences {
 				match, err := filepath.Match(audienceMatch, audience)
 				if match == true && err == nil {
@@ -133,7 +133,7 @@ func HasJwtAudience(audiences ...string) Condition {
 
 func JwtIsNotExpired() Condition {
 	return ConditionFunc(func(r *http.Request) bool {
-		t, ok := r.Context().Value(&jwtContextKey).(*token.JwtToken)
+		t, ok := jwtoken.FromContext(r.Context())
 		if !ok {
 			return false
 		}

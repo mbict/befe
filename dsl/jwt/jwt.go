@@ -2,19 +2,40 @@ package jwt
 
 import (
 	"context"
+	"github.com/coreos/go-oidc/v3/oidc"
 	. "github.com/mbict/befe/dsl"
+	"github.com/mbict/befe/dsl/jwt/jwtoken"
 	. "github.com/mbict/befe/expr"
-	"github.com/mbict/befe/utils/token"
 	"log"
 	"net/http"
+	"strings"
 )
-
-var jwtContextKey int
-
-var emptyHandler = func(_ http.ResponseWriter, _ *http.Request) {}
 
 var stopHandler = func(rw http.ResponseWriter, r *http.Request) (bool, error) {
 	return false, nil
+}
+
+type TokenFetcher func(r *http.Request) string
+
+func TokenFromHeader() TokenFetcher {
+	return func(r *http.Request) string {
+		reqToken := r.Header.Get("Authorization")
+		splitToken := strings.Split(reqToken, "Bearer ")
+		if len(splitToken) != 2 {
+			return ""
+		}
+		return splitToken[1]
+	}
+}
+
+func TokenFromCookie(name string) TokenFetcher {
+	return func(r *http.Request) string {
+		c, err := r.Cookie(name)
+		if err != nil {
+			return ""
+		}
+		return c.Value
+	}
 }
 
 type Jwk interface {
@@ -27,11 +48,15 @@ type Jwk interface {
 	WhenExpired(actions ...Action) Jwk
 	WhenDenied(actions ...Action) Jwk
 	WhenNoToken(actions ...Action) Jwk
+
+	TokenFrom(tokenFetchers ...TokenFetcher) Jwk
 }
 
 func JwkToken(issuer string) Jwk {
+
 	return &jwtValidator{
-		issuers:           []string{issuer},
+		tokenFetchers:     []TokenFetcher{TokenFromHeader()},
+		issuer:            issuer,
 		withAudienceCheck: nil,
 		withExpiredCheck:  false,
 		withClaims:        map[string][]string{},
@@ -43,7 +68,9 @@ func JwkToken(issuer string) Jwk {
 }
 
 type jwtValidator struct {
-	issuers           []string
+	tokenFetchers []TokenFetcher
+	issuer        string
+
 	withAudienceCheck []string
 	withExpiredCheck  bool
 	withClaims        map[string][]string
@@ -84,8 +111,20 @@ func (j *jwtValidator) WhenNoToken(actions ...Action) Jwk {
 	return j
 }
 
+func (j *jwtValidator) TokenFrom(fetchers ...TokenFetcher) Jwk {
+	j.tokenFetchers = fetchers
+	return j
+}
+
 func (j *jwtValidator) BuildHandler(ctx context.Context, next Handler) Handler {
-	jwtVerifier := token.NewJwkVerifier(ctx, j.issuers[0])
+	jwtVerifier := oidc.NewVerifier(j.issuer, oidc.NewRemoteKeySet(ctx, j.issuer), &oidc.Config{
+		ClientID:                   "",
+		SupportedSigningAlgs:       []string{"RS256"},
+		SkipClientIDCheck:          true,
+		SkipExpiryCheck:            !j.withExpiredCheck,
+		SkipIssuerCheck:            true, // <- make it configurable
+		InsecureSkipSignatureCheck: false,
+	})
 
 	if j.deniedActions == nil {
 		j.deniedActions = Actions{Deny()}
@@ -112,32 +151,35 @@ func (j *jwtValidator) BuildHandler(ctx context.Context, next Handler) Handler {
 			conditions = append(conditions, HasJwtClaim(key, values...))
 		}
 	}
-	postCheck := conditions.BuildCondition()
+	postCheck := conditions.BuildCondition(ctx)
 
 	return func(rw http.ResponseWriter, r *http.Request) (bool, error) {
-		jwt := token.FromRequest(r)
-		if jwt == nil || len(jwt) == 0 {
+		var jwt string
+		for _, fetcher := range j.tokenFetchers {
+			if jwt = fetcher(r); jwt != "" {
+				break
+			}
+		}
+		if jwt == "" {
 			//show error/ denied etc
 			return noTokenHandler(rw, r)
 		}
 
-		valid, t, err := jwtVerifier.Verify(jwt)
-
-		//default cases on errors
+		idToken, err := jwtVerifier.Verify(r.Context(), jwt)
 		if err != nil {
-			switch err.Error() {
-			case "exp not satisfied":
+			// handle error
+			switch err.(type) {
+			case *oidc.TokenExpiredError:
 				return expiredHandler(rw, r)
-			default:
-				log.Printf("unkown error decoding jwt token :%v", err)
-				return deniedHandler(rw, r)
 			}
-			return false, err
+
+			log.Printf("unkown error decoding jwt token :%v", err)
+			return deniedHandler(rw, r)
 		}
 
-		r = r.WithContext(context.WithValue(r.Context(), &jwtContextKey, t))
+		r = r.WithContext(jwtoken.ToContext(r.Context(), jwtoken.New(idToken)))
 
-		if valid == false || postCheck(r) == false {
+		if postCheck(r) == false {
 			//show error/ denied etc
 			return deniedHandler(rw, r)
 		}

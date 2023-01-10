@@ -35,3 +35,8 @@ func WrapHttpHandler(h Handler) http.Handler {
 		}
 	})
 }
+
+// EmptyHandler is the last handler in the chain that will break execution
+func EmptyHandler(w http.ResponseWriter, r *http.Request) (bool, error) {
+	return false, nil
+}
