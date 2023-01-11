@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"fmt"
 	"github.com/Masterminds/sprig/v3"
 	"github.com/mbict/befe/dsl"
 	. "github.com/mbict/befe/expr"
@@ -70,6 +71,9 @@ type htmlTemplater struct {
 func (h *htmlTemplater) Render(dataFn ...Param) Action {
 	return ActionFunc(func(rw http.ResponseWriter, r *http.Request) (bool, error) {
 		err := h.t.Execute(rw, generateTemplateData(dataFn, r))
+		if err != nil {
+			fmt.Println("template has error: ", err)
+		}
 		return err == nil, err
 
 	})
@@ -78,6 +82,9 @@ func (h *htmlTemplater) Render(dataFn ...Param) Action {
 func (h *htmlTemplater) RenderTemplate(name string, dataFn ...Param) Action {
 	return ActionFunc(func(rw http.ResponseWriter, r *http.Request) (bool, error) {
 		err := h.t.ExecuteTemplate(rw, name, generateTemplateData(dataFn, r))
+		if err != nil {
+			fmt.Println("template has error: ", err)
+		}
 		return err == nil, err
 	})
 }

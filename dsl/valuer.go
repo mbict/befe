@@ -19,6 +19,12 @@ func Host() expr.Valuer {
 	}
 }
 
+func RequestURI() expr.Valuer {
+	return func(r *http.Request) interface{} {
+		return r.RequestURI
+	}
+}
+
 func ValueFromEnv(name string) expr.Valuer {
 	return func(r *http.Request) interface{} {
 		return FromEnv(name)

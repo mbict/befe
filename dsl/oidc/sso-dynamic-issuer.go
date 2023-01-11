@@ -140,6 +140,7 @@ func (s *dynamicSSO) getProvider(r *http.Request) (*ssoProvider, error) {
 	)
 
 	if err != nil {
+		panic(err)
 		return nil, err
 	}
 
