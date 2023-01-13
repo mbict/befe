@@ -136,7 +136,7 @@ func (s *dynamicSSO) getProvider(r *http.Request) (*ssoProvider, error) {
 		authority,
 		s.clientIdValuer(r).(string),
 		s.clientSecretValuer(r).(string),
-		"http://"+s.redirectUrlValuer(r).(string)+authCallbackPath,
+		s.redirectUrlValuer(r).(string)+authCallbackPath,
 	)
 
 	if err != nil {
