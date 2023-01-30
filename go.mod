@@ -3,6 +3,7 @@ module github.com/mbict/befe
 go 1.19
 
 require (
+	github.com/KimMachineGun/automemlimit v0.2.4
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/coreos/go-oidc/v3 v3.5.0
 	github.com/goccy/go-json v0.10.0
@@ -16,6 +17,7 @@ require (
 	github.com/traefik/yaegi v0.14.3
 	github.com/vmihailenco/msgpack/v5 v5.3.5
 	go.nhat.io/httpmock v0.9.0
+	go.uber.org/automaxprocs v1.5.1
 	golang.org/x/oauth2 v0.4.0
 	google.golang.org/appengine v1.6.7
 )
@@ -24,9 +26,15 @@ require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.0 // indirect
 	github.com/bool64/shared v0.1.4 // indirect
+	github.com/cilium/ebpf v0.4.0 // indirect
+	github.com/containerd/cgroups v1.0.4 // indirect
+	github.com/coreos/go-systemd/v22 v22.3.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
+	github.com/docker/go-units v0.4.0 // indirect
 	github.com/go-jose/go-jose/v3 v3.0.0 // indirect
+	github.com/godbus/dbus/v5 v5.0.4 // indirect
+	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/huandu/xstrings v1.4.0 // indirect
@@ -39,9 +47,11 @@ require (
 	github.com/lestrrat-go/option v1.0.1 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
+	github.com/opencontainers/runtime-spec v1.0.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
+	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/swaggest/assertjson v1.7.0 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
@@ -50,6 +60,7 @@ require (
 	go.nhat.io/matcher/v2 v2.0.0 // indirect
 	golang.org/x/crypto v0.5.0 // indirect
 	golang.org/x/net v0.5.0 // indirect
+	golang.org/x/sys v0.4.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

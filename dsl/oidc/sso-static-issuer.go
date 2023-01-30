@@ -9,10 +9,11 @@ import (
 
 func SingleSignOn(authority string, clientId string, clientSecret string, redirectUrl string, options ...ProviderOption) SSO {
 	return &singleSignon{
-		authority:    authority,
-		clientId:     clientId,
-		clientSecret: clientSecret,
-		redirectURL:  redirectUrl + authCallbackPath,
+		authority:       authority,
+		clientId:        clientId,
+		clientSecret:    clientSecret,
+		redirectURL:     redirectUrl + authCallbackPath,
+		providerOptions: options,
 	}
 }
 
