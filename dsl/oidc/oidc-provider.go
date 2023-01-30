@@ -8,9 +8,12 @@ import (
 	"github.com/mbict/befe/expr"
 	"golang.org/x/oauth2"
 	"net/http"
+	"time"
 )
 
-func newProvider(ctx context.Context, authority, clientId, clientSecret, redirectUrl string) (*ssoProvider, error) {
+type ProviderOption func(provider *ssoProvider)
+
+func newProvider(ctx context.Context, authority, clientId, clientSecret, redirectUrl string, options ...ProviderOption) (*ssoProvider, error) {
 	provider, err := oidc.NewProvider(ctx, authority)
 	if err != nil {
 		return nil, err
@@ -35,11 +38,19 @@ func newProvider(ctx context.Context, authority, clientId, clientSecret, redirec
 		InsecureSkipSignatureCheck: false,
 	})
 
-	return &ssoProvider{
-		provider:     provider,
-		oauth2Config: oauth2Config,
-		verifier:     verifier,
-	}, nil
+	p := &ssoProvider{
+		provider:       provider,
+		oauth2Config:   oauth2Config,
+		verifier:       verifier,
+		cookiePath:     "/",
+		cookieHttpOnly: true,
+	}
+
+	for _, option := range options {
+		option(p)
+	}
+
+	return p, nil
 }
 
 type ssoProvider struct {
@@ -47,6 +58,9 @@ type ssoProvider struct {
 	provider     *oidc.Provider
 	verifier     *oidc.IDTokenVerifier
 	redirectUrl  string
+
+	cookiePath     string
+	cookieHttpOnly bool
 }
 
 func (p *ssoProvider) redirect(rw http.ResponseWriter, req *http.Request) {
@@ -98,7 +112,12 @@ func (p *ssoProvider) handleRequest(rw http.ResponseWriter, req *http.Request, n
 		//}
 
 		//set the cookie
-		http.SetCookie(rw, setCookie(jwtToken))
+		http.SetCookie(rw, &http.Cookie{
+			Name:     "access_token",
+			Value:    jwtToken,
+			Path:     p.cookiePath,
+			HttpOnly: p.cookieHttpOnly,
+		})
 
 		//redirect to the original page
 		http.Redirect(rw, req, decodeUrlPathState(req.URL.Query().Get("state")), http.StatusFound)
@@ -109,7 +128,13 @@ func (p *ssoProvider) handleRequest(rw http.ResponseWriter, req *http.Request, n
 	//we have cookie, lets validate and proceed if applicable
 	idToken, err := p.checkCookie(req)
 	if err != nil {
-		http.SetCookie(rw, unsetCookie())
+		http.SetCookie(rw, &http.Cookie{
+			Name:     "access_token",
+			Value:    "",
+			Path:     p.cookiePath,
+			Expires:  time.Unix(0, 0),
+			HttpOnly: p.cookieHttpOnly,
+		})
 		switch err {
 		case ErrNoToken:
 			if onNoTokenHandler == nil {

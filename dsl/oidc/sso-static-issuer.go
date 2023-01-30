@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-func SingleSignOn(authority string, clientId string, clientSecret string, redirectUrl string) SSO {
+func SingleSignOn(authority string, clientId string, clientSecret string, redirectUrl string, options ...ProviderOption) SSO {
 	return &singleSignon{
 		authority:    authority,
 		clientId:     clientId,
@@ -17,8 +17,9 @@ func SingleSignOn(authority string, clientId string, clientSecret string, redire
 }
 
 type singleSignon struct {
-	provider *ssoProvider
-	mu       sync.Mutex
+	provider        *ssoProvider
+	providerOptions []ProviderOption
+	mu              sync.Mutex
 
 	authority    string
 	clientId     string
@@ -52,23 +53,23 @@ func (s *singleSignon) WithClaim(name string, values ...string) SSO {
 }
 
 func (s *singleSignon) WhenExpired(action ...Action) SSO {
-	//TODO implement me
-	panic("implement me")
+	s.expiredActions = append(s.expiredActions, action...)
+	return s
 }
 
 func (s *singleSignon) WhenDenied(action ...Action) SSO {
-	//TODO implement me
-	panic("implement me")
+	s.invalidTokenActions = append(s.invalidTokenActions, action...)
+	return s
 }
 
 func (s *singleSignon) WhenInvalidToken(action ...Action) SSO {
-	//TODO implement me
-	panic("implement me")
+	s.invalidTokenActions = append(s.invalidTokenActions, action...)
+	return s
 }
 
 func (s *singleSignon) WhenNoToken(action ...Action) SSO {
-	//TODO implement me
-	panic("implement me")
+	s.noTokenActions = append(s.noTokenActions, action...)
+	return s
 }
 
 func (s *singleSignon) getProvider(ctx context.Context) *ssoProvider {
@@ -79,7 +80,7 @@ func (s *singleSignon) getProvider(ctx context.Context) *ssoProvider {
 		return s.provider
 	}
 
-	provider, err := newProvider(ctx, s.authority, s.clientId, s.clientSecret, s.redirectURL)
+	provider, err := newProvider(ctx, s.authority, s.clientId, s.clientSecret, s.redirectURL, s.providerOptions...)
 	if err != nil {
 		panic(err)
 	}

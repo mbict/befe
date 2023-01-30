@@ -15,14 +15,25 @@ import (
 )
 
 type reverseProxy struct {
-	proxy     *httputil.ReverseProxy
-	targetUrl *url.URL
+	proxy                 *httputil.ReverseProxy
+	targetUrl             *url.URL
+	useHostFromServiceUrl bool
 }
 
 func (p *reverseProxy) BuildHandler(_ context.Context, next Handler) Handler {
-
 	rproxy := httputil.NewSingleHostReverseProxy(p.targetUrl)
 	rproxy.BufferPool = bufferpool.New()
+
+	//normally the host is forwarded, but in some situations like local development
+	//you want to overwrite the host and use the host from the targeturl
+	if p.useHostFromServiceUrl {
+		currentDirector := rproxy.Director
+		rproxy.Director = func(request *http.Request) {
+			currentDirector(request)
+			request.Host = request.URL.Host
+		}
+	}
+
 	if next != nil {
 		rproxy.ModifyResponse = func(response *http.Response) error {
 			//try to decode body to a processable type
@@ -32,8 +43,6 @@ func (p *reverseProxy) BuildHandler(_ context.Context, next Handler) Handler {
 			}
 
 			req := StoreResultBucket(response.Request, "", data, response, nil)
-
-			fmt.Println("---->", data)
 
 			rw := &proxyResponseWriter{}
 
@@ -77,15 +86,31 @@ func (p *reverseProxy) BuildHandler(_ context.Context, next Handler) Handler {
 	}
 }
 
-func ReverseProxy(serviceUrl string) Action {
+type ReverseProxyOption func(rp *reverseProxy)
+
+// WithHostFromServiceUrl will not forward the original Host in the Headers
+// but will overwrite this one while forwarding with the host of the target url
+func WithHostFromServiceUrl() ReverseProxyOption {
+	return func(rp *reverseProxy) {
+		rp.useHostFromServiceUrl = true
+	}
+}
+
+func ReverseProxy(serviceUrl string, options ...ReverseProxyOption) Action {
 	u, err := url.Parse(serviceUrl)
 	if err != nil {
 		panic(fmt.Errorf("unable to parse url `%s` for reverse proxy: %w", serviceUrl, err))
 	}
 
-	return &reverseProxy{
+	rp := &reverseProxy{
 		targetUrl: u,
 	}
+
+	for _, option := range options {
+		option(rp)
+	}
+
+	return rp
 }
 
 type proxyResponseWriter struct {

@@ -4,7 +4,13 @@ import (
 	"errors"
 	. "github.com/mbict/befe/expr"
 	"net/http"
-	"time"
+)
+
+var (
+	ErrNoToken         = errors.New("no token")        //no token in cookie
+	ErrNoAccessToken   = errors.New("no access token") // no access token was returned in the authorize request
+	ErrTokenExpired    = errors.New("token expired")
+	ErrValidatingToken = errors.New("token validation failed")
 )
 
 var (
@@ -13,6 +19,18 @@ var (
 )
 
 const authCallbackPath = `/auth/callback`
+
+func WithCookieHttpOnly(httpOnly bool) ProviderOption {
+	return func(provider *ssoProvider) {
+		provider.cookieHttpOnly = httpOnly
+	}
+}
+
+func WithCookiePath(path string) ProviderOption {
+	return func(provider *ssoProvider) {
+		provider.cookiePath = path
+	}
+}
 
 type SSO interface {
 	Action
@@ -41,32 +59,4 @@ func AuthTokenRedirect() Action {
 		provider.redirect(rw, r)
 		return false, nil
 	})
-}
-
-var (
-	ErrNoToken         = errors.New("no token")        //no token in cookie
-	ErrNoAccessToken   = errors.New("no access token") // no access token was returned in the authorize request
-	ErrTokenExpired    = errors.New("token expired")
-	ErrValidatingToken = errors.New("token validation failed")
-)
-
-func unsetCookie() *http.Cookie {
-	return &http.Cookie{
-		Name:     "access_token",
-		Value:    "",
-		Path:     "/",
-		Expires:  time.Unix(0, 0),
-		HttpOnly: true,
-	}
-
-}
-
-func setCookie(accessToken string) *http.Cookie {
-	return &http.Cookie{
-		Name:  "access_token",
-		Value: accessToken,
-		Path:  "/",
-
-		HttpOnly: true,
-	}
 }

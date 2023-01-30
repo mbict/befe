@@ -14,7 +14,10 @@ func Debug(message string, params ...interface{}) Action {
 			switch v := param.(type) {
 			case Valuer:
 				parsedParams[i] = v(r)
-
+			case ConditionFunc:
+				parsedParams[i] = v(r)
+			case Condition:
+				parsedParams[i] = v.BuildCondition(r.Context())(r)
 			default:
 				parsedParams[i] = param
 			}

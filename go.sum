@@ -76,8 +76,8 @@ github.com/mitchellh/reflectwalk v1.0.2 h1:G2LzWKi524PWgd3mLHV8Y5k7s6XUvT0Gef6zx
 github.com/mitchellh/reflectwalk v1.0.2/go.mod h1:mSTlrgnPZtwu0c4WaC2kGObEpuNDbx0jmZXqmk4esnw=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e h1:fD57ERR4JtEqsWbfPhv4DMiApHyliiK5xCTNVSPiaAs=
 github.com/nxadm/tail v1.4.8 h1:nPr65rt6Y5JFSKQO7qToXr7pePgD6Gwiw05lkbyAQTE=
-github.com/ohler55/ojg v1.17.0 h1:sdn5CE7Sx+0fbj/tfSF+yKi2vhUX6jU7cjVFi9SE2LM=
-github.com/ohler55/ojg v1.17.0/go.mod h1:7Ghirupn8NC8hSSDpI0gcjorPxj+vSVIONDWfliHR1k=
+github.com/ohler55/ojg v1.17.3 h1:NsyfSN+GScWFzXZCVuVimK0xOqUEqTSwuZ+J1WA50nw=
+github.com/ohler55/ojg v1.17.3/go.mod h1:7Ghirupn8NC8hSSDpI0gcjorPxj+vSVIONDWfliHR1k=
 github.com/onsi/ginkgo v1.15.2 h1:l77YT15o814C2qVL47NOyjV/6RbaP7kKdrvZnxQ3Org=
 github.com/onsi/gomega v1.11.0 h1:+CqWgvj0OZycCaqclBD1pxKHAU+tOkHmQIWvDHq2aug=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=

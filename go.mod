@@ -7,9 +7,8 @@ require (
 	github.com/coreos/go-oidc/v3 v3.5.0
 	github.com/goccy/go-json v0.10.0
 	github.com/joho/godotenv v1.4.0
-	github.com/lestrrat-go/backoff/v2 v2.0.8
 	github.com/lestrrat-go/jwx v1.2.25
-	github.com/ohler55/ojg v1.17.0
+	github.com/ohler55/ojg v1.17.3
 	github.com/pkg/errors v0.9.1
 	github.com/radovskyb/watcher v1.0.7
 	github.com/rs/cors v1.8.3
@@ -33,6 +32,7 @@ require (
 	github.com/huandu/xstrings v1.4.0 // indirect
 	github.com/iancoleman/orderedmap v0.2.0 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
+	github.com/lestrrat-go/backoff/v2 v2.0.8 // indirect
 	github.com/lestrrat-go/blackmagic v1.0.1 // indirect
 	github.com/lestrrat-go/httpcc v1.0.1 // indirect
 	github.com/lestrrat-go/iter v1.0.2 // indirect

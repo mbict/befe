@@ -10,9 +10,10 @@ import (
 // DynamicSingleSignOn uses a dynamic authority and conifguration that can be created on the fly with Valuers
 // authority is created and checked every request if there is a know configuration
 // clientId, clientSecret and redirectUrl is only used when creating a new SSO config if the authority is not known yet.
-func DynamicSingleSignOn(authority Valuer, clientId Valuer, clientSecret Valuer, redirectUrl Valuer) SSO {
+func DynamicSingleSignOn(authority Valuer, clientId Valuer, clientSecret Valuer, redirectUrl Valuer, option ...ProviderOption) SSO {
 	return &dynamicSSO{
 		providers:          make(map[string]*ssoProvider),
+		providerOptions:    option,
 		authorityValuer:    authority,
 		clientIdValuer:     clientId,
 		clientSecretValuer: clientSecret,
@@ -21,8 +22,9 @@ func DynamicSingleSignOn(authority Valuer, clientId Valuer, clientSecret Valuer,
 }
 
 type dynamicSSO struct {
-	providers map[string]*ssoProvider
-	mu        sync.RWMutex
+	providers       map[string]*ssoProvider
+	providerOptions []ProviderOption
+	mu              sync.RWMutex
 
 	authorityValuer    Valuer
 	clientIdValuer     Valuer
@@ -137,6 +139,7 @@ func (s *dynamicSSO) getProvider(r *http.Request) (*ssoProvider, error) {
 		s.clientIdValuer(r).(string),
 		s.clientSecretValuer(r).(string),
 		s.redirectUrlValuer(r).(string)+authCallbackPath,
+		s.providerOptions...,
 	)
 
 	if err != nil {
