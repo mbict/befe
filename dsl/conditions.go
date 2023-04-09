@@ -111,6 +111,31 @@ func HasCookie(name string) Condition {
 	})
 }
 
+func HasHeader(name string) Condition {
+	return ConditionFunc(func(r *http.Request) bool {
+		return r.Header.Get(name) != ""
+	})
+}
+
+func HeaderEquals(name string, values ...string) Condition {
+	return ConditionFunc(func(r *http.Request) bool {
+		headerValue := r.Header.Get(name)
+		for _, value := range values {
+			if value == headerValue {
+				return true
+			}
+		}
+		return false
+	})
+}
+
+func HeaderHasValue(name string, valuer Valuer) Condition {
+	return ConditionFunc(func(r *http.Request) bool {
+		compareValue := valuer(r)
+		return compareValue == r.Header.Get(name)
+	})
+}
+
 func QueryEquals(name string, values ...string) Condition {
 	return ConditionFunc(func(r *http.Request) bool {
 		requestValues, ok := r.URL.Query()[name]
