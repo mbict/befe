@@ -52,8 +52,6 @@ func (p *reverseProxy) BuildHandler(_ context.Context, next Handler) Handler {
 
 			bucket := GetResultBucket(req.Context())
 
-			fmt.Println("---->", bucket.Data, data)
-
 			/* @todo hardcoded json encode to, dynamic encode
 
 			rw.Header().Get(`Content-Type`)
@@ -65,16 +63,24 @@ func (p *reverseProxy) BuildHandler(_ context.Context, next Handler) Handler {
 			}
 			*/
 
-			b, err := json.Marshal(data)
-			if err != nil {
-				return err
-			}
+			switch v := bucket.Data.(type) {
+			case []byte:
+				response.Body = io.NopCloser(bytes.NewReader(v))
+				contentLength := len(v)
+				response.ContentLength = int64(contentLength)
+				response.Header.Set("Content-Length", strconv.Itoa(contentLength))
+			default:
+				b, err := json.Marshal(v)
+				if err != nil {
+					return err
+				}
 
-			body := io.NopCloser(bytes.NewReader(b))
-			response.Body = body
-			contentLength := len(b)
-			response.ContentLength = int64(contentLength)
-			response.Header.Set("Content-Length", strconv.Itoa(contentLength))
+				body := io.NopCloser(bytes.NewReader(b))
+				response.Body = body
+				contentLength := len(b)
+				response.ContentLength = int64(contentLength)
+				response.Header.Set("Content-Length", strconv.Itoa(contentLength))
+			}
 
 			return nil
 		}

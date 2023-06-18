@@ -31,11 +31,19 @@ type Merger interface {
 	Matcher(sourcePattern string, targetPattern string) Merger
 }
 
+func ResultMerger() Merger {
+	return &resultsetMerger{
+		useOnlyFirstResult: true,
+	}
+}
+
 func ResultsetMerger() Merger {
 	return &resultsetMerger{}
 }
 
 type resultsetMerger struct {
+	useOnlyFirstResult bool //when a match is found we only use the first found result
+
 	targetPath string
 	sourcer    expr.Valuer
 
@@ -66,6 +74,12 @@ func (m *resultsetMerger) BuildHandler(ctx context.Context, next expr.Handler) e
 			if dm, ok := data.(map[string]interface{}); ok {
 				lookupKey := m.targetMatchPattern.First(dm)
 				if mergeData, ok := dataset[lookupKey]; ok {
+
+					if m.useOnlyFirstResult {
+						dm[targetField] = mergeData[0]
+						return
+					}
+
 					mergeInto, ok := dm[targetField].([]interface{})
 					if !ok {
 						dm[targetField] = mergeData

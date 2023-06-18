@@ -15,7 +15,7 @@ func NewJsonEncoding() *JsonEncoding {
 
 func (j *JsonEncoding) CanDecode(mimetype string) bool {
 	mimetype = strings.ToLower(mimetype)
-	return mimetype == `application/json` || strings.HasSuffix(mimetype, "+json")
+	return strings.HasPrefix(mimetype, `application/json`) || strings.HasSuffix(mimetype, "+json")
 }
 
 func (j *JsonEncoding) Decode(body io.Reader, v any) error {

@@ -15,7 +15,7 @@ func NewXMLEncoding() *XMLEncoding {
 
 func (j *XMLEncoding) CanDecode(mimetype string) bool {
 	mimetype = strings.ToLower(mimetype)
-	return mimetype == `application/xml` || strings.HasSuffix(mimetype, "+xml")
+	return strings.HasPrefix(mimetype, `application/xml`) || strings.HasSuffix(mimetype, "+xml")
 }
 
 func (j *XMLEncoding) Decode(body io.Reader, v any) error {

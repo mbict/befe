@@ -2,6 +2,7 @@ package expr
 
 import (
 	"fmt"
+	"github.com/mbict/befe/pkg/slices"
 	"net/http"
 	"strconv"
 	"strings"
@@ -25,7 +26,7 @@ func ValueToString(in interface{}) string {
 		}
 		return ValueToString(res)
 	case []string:
-		return strings.Join(v, `,`)
+		return strings.Join(slices.Unique(v), `,`)
 	case int:
 		return strconv.Itoa(v)
 	case float64:
