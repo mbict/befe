@@ -2,7 +2,7 @@ FROM golang:latest as builder
 WORKDIR /app
 ADD . /app
 RUN go mod download
-RUN go install github.com/traefik/yaegi/internal/cmd/extract
+RUN go install github.com/traefik/yaegi/cmd/yaegi@latest
 RUN go generate ./...
 RUN CGO_ENABLED=0 go build -a -ldflags '-s -w -extldflags "-static"' -o befe .
 
