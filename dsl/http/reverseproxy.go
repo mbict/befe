@@ -121,14 +121,14 @@ func ReverseProxy(serviceUrl string, options ...ReverseProxyOption) Action {
 
 type proxyResponseWriter struct {
 	bytes.Buffer
+
+	statusCode int
 }
 
 func (p *proxyResponseWriter) Header() http.Header {
-	//TODO implement me
-	panic("implement me")
+	return http.Header{}
 }
 
 func (p *proxyResponseWriter) WriteHeader(statusCode int) {
-	//TODO implement me
-	panic("implement me")
+	p.statusCode = statusCode
 }

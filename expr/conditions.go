@@ -10,7 +10,7 @@ type Conditions []Condition
 
 func (c Conditions) BuildHandler(ctx context.Context, next Handler) Handler {
 	//TODO implement me
-	panic("implement me")
+	panic("implement me condition build handler")
 }
 
 func (c Conditions) BuildCondition(ctx context.Context) ConditionFunc {
@@ -33,10 +33,10 @@ func (c Conditions) BuildCondition(ctx context.Context) ConditionFunc {
 
 func (c Conditions) Else(action ...Action) Action {
 	//TODO implement me
-	panic("implement me")
+	panic("implement me condition handler else")
 }
 
 func (c Conditions) Then(action ...Action) ElseCondition {
 	//TODO implement me
-	panic("implement me")
+	panic("implement me condition handler then")
 }

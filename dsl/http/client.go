@@ -105,27 +105,27 @@ func (c *httpClient) Get(path Valuer) Promise {
 
 func (c *httpClient) Post(path Valuer) Promise {
 	//TODO implement me
-	panic("implement me")
+	panic("implement me post")
 }
 
 func (c *httpClient) Put(path Valuer) Promise {
 	//TODO implement me
-	panic("implement me")
+	panic("implement me put")
 }
 
 func (c *httpClient) Patch(path Valuer) Promise {
 	//TODO implement me
-	panic("implement me")
+	panic("implement me patch")
 }
 
 func (c *httpClient) Delete(path Valuer) Promise {
 	//TODO implement me
-	panic("implement me")
+	panic("implement me delete")
 }
 
 func (c *httpClient) Head(path Valuer) Promise {
 	//TODO implement me
-	panic("implement me")
+	panic("implement me head")
 }
 
 func (c *httpClient) createRequestHandler(call func(r *http.Request) (*http.Response, error)) Promise {

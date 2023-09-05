@@ -40,17 +40,17 @@ func (s *singleSignon) WithSameIssuer() SSO {
 
 func (s *singleSignon) WithAudience(audiences ...string) SSO {
 	//TODO implement me
-	panic("implement me")
+	panic("implement me sso with audience")
 }
 
 func (s *singleSignon) WithExpiredCheck() SSO {
 	//TODO implement me
-	panic("implement me")
+	panic("implement me sso with with expired check")
 }
 
 func (s *singleSignon) WithClaim(name string, values ...string) SSO {
 	//TODO implement me
-	panic("implement me")
+	panic("implement me sso with claiom")
 }
 
 func (s *singleSignon) WhenExpired(action ...Action) SSO {

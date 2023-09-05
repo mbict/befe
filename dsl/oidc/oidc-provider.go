@@ -170,7 +170,7 @@ func (p *ssoProvider) handleRequest(rw http.ResponseWriter, req *http.Request, n
 	}
 	req = req.WithContext(jwtoken.ToContext(req.Context(), jwtoken.New(idToken)))
 
-	//we should navigate away form the callback auth page, to avoid
+	//we should navigate away from the callback auth page, to avoid
 	if req.URL.Path == authCallbackPath {
 		http.Redirect(rw, req, "/", http.StatusFound)
 		return false, nil
