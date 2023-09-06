@@ -1,0 +1,124 @@
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	. "github.com/mbict/befe/dsl"
+	"github.com/mbict/befe/expr"
+	"github.com/stretchr/testify/assert"
+	"go.nhat.io/httpmock"
+	"net/http/httptest"
+	"testing"
+)
+
+func TestProgram(t *testing.T) {
+	testcases := []struct {
+		scenario   string
+		method     string
+		path       string
+		mockServer httpmock.Mocker
+
+		expectedCode int
+		expectedJson JSON
+	}{
+		{
+			scenario: "external call to /accounts fails with internal server error",
+			method:   "GET",
+			path:     "/locations",
+			mockServer: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet("/accounts").
+					ReturnCode(500)
+			}),
+			expectedCode: 500,
+		},
+		{
+			scenario: "external call to sub page fails with internal server error",
+			method:   "GET",
+			path:     "/locations",
+			mockServer: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet("/accounts").
+					ReturnHeader("Content-Type", "application/json").
+					ReturnJSON(JSON{
+						"data": []interface{}{
+							JSON{"id": "123"},
+							JSON{"id": "345"},
+							JSON{"id": "678"},
+						},
+					})
+				s.ExpectGet("/other?account_id=123,345,678&size=1000").
+					ReturnCode(500)
+			}),
+			expectedCode: 500,
+		},
+		{
+			scenario: "successfully call and one page result",
+			method:   "GET",
+			path:     "/locations",
+			mockServer: httpmock.New(func(s *httpmock.Server) {
+				s.ExpectGet("/accounts").
+					ReturnHeader("Content-Type", "application/json").
+					ReturnJSON(JSON{
+						"data": []interface{}{
+							JSON{"id": "123"},
+							JSON{"id": "345"},
+							JSON{"id": "678"},
+						},
+						"metadata": JSON{"total": 3},
+					})
+
+				s.ExpectGet("/other?account_id=123,345,678&size=1000").
+					ReturnHeader("Content-Type", "application/json").
+					ReturnJSON(JSON{
+						"data": []interface{}{
+							JSON{"id": "101", "account_id": "678", "name": "first 678"},
+							JSON{"id": "102", "account_id": "123", "name": "first 123"},
+							JSON{"id": "103", "account_id": "678", "name": "last 679"},
+						},
+						"metadata": JSON{"total": 3},
+					})
+			}),
+			expectedCode: 200,
+			expectedJson: JSON{
+				"data": []interface{}{
+					JSON{"id": "123", "name": "first 123"},
+					JSON{"id": "345"},
+					JSON{"id": "678", "name": "first 678"},
+				},
+				"metadata": JSON{"total": 3},
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.scenario, func(t *testing.T) {
+
+			rw := httptest.NewRecorder()
+			r := httptest.NewRequest(tc.method, tc.path, nil)
+
+			//run mock server if config present
+			if tc.mockServer != nil {
+				srv := tc.mockServer(t)
+				defer srv.Close()
+				t.Setenv("API_URI", srv.URL())
+			}
+			//
+			//Program().
+			//	BuildHandler(context.Background(), nil).
+			//	ServeHTTP(rw, r)
+
+			expr.WrapHttpHandler(
+				Program().BuildHandler(context.Background(), nil),
+			).ServeHTTP(rw, r)
+
+			fmt.Println("body ->", rw.Body.String())
+
+			assert.Equal(t, tc.expectedCode, rw.Code)
+
+			if tc.expectedJson != nil {
+				expectedJson, _ := json.Marshal(tc.expectedJson)
+				assert.JSONEq(t, string(expectedJson), rw.Body.String())
+			}
+		})
+	}
+}

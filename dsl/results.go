@@ -25,6 +25,11 @@ type Merger interface {
 	expr.Action
 
 	Source(sourcer expr.Valuer) Merger
+
+	//SubResult will extract the first result from the matched source and place that into the target node
+	SubResult(path string) Merger
+	//SubResults will extract all the results from the matched source and place that into the target node
+	SubResults(path string) Merger
 	Target(path string) Merger
 
 	// Matcher gets a jsonPath pattern to find and match nodes
@@ -44,12 +49,15 @@ func ResultsetMerger() Merger {
 type resultsetMerger struct {
 	useOnlyFirstResult bool //when a match is found we only use the first found result
 
-	targetPath string
-	sourcer    expr.Valuer
+	targetPath          string
+	sourceSubResultPath expr.Valuer
+	sourcer             expr.Valuer
 
 	//matcher jsonPath patterns
-	sourceMatchPattern jp.Expr
-	targetMatchPattern jp.Expr
+	sourceMatchPattern    jp.Expr
+	firstSubResultOnly    bool
+	subResultMatchPattern jp.Expr
+	targetMatchPattern    jp.Expr
 }
 
 func (m *resultsetMerger) BuildHandler(ctx context.Context, next expr.Handler) expr.Handler {
@@ -76,15 +84,15 @@ func (m *resultsetMerger) BuildHandler(ctx context.Context, next expr.Handler) e
 				if mergeData, ok := dataset[lookupKey]; ok {
 
 					if m.useOnlyFirstResult {
-						dm[targetField] = mergeData[0]
+						dm[targetField] = m.extractSubResult(mergeData[0])
 						return
 					}
 
 					mergeInto, ok := dm[targetField].([]interface{})
 					if !ok {
-						dm[targetField] = mergeData
+						dm[targetField] = m.extractSubResults(mergeData)
 					} else {
-						dm[targetField] = append(mergeInto, mergeData...)
+						dm[targetField] = append(mergeInto, m.extractSubResults(mergeData)...)
 					}
 				}
 
@@ -99,8 +107,50 @@ func (m *resultsetMerger) BuildHandler(ctx context.Context, next expr.Handler) e
 	}
 }
 
+func (m *resultsetMerger) extractSubResult(data interface{}) interface{} {
+	if m.subResultMatchPattern == nil {
+		return data
+	}
+
+	if m.firstSubResultOnly {
+		return m.subResultMatchPattern.First(data)
+	}
+
+	return m.subResultMatchPattern.Get(data)
+}
+
+func (m *resultsetMerger) extractSubResults(data []interface{}) []interface{} {
+	if m.subResultMatchPattern == nil {
+		return data
+	}
+
+	res := make([]interface{}, len(data))
+	for i, v := range data {
+		res[i] = m.extractSubResult(v)
+	}
+	return res
+}
+
 func (m *resultsetMerger) Source(sourcer expr.Valuer) Merger {
 	m.sourcer = sourcer
+	return m
+}
+
+func (m *resultsetMerger) SubResult(path string) Merger {
+	var err error
+	m.firstSubResultOnly = true
+	if m.subResultMatchPattern, err = jp.ParseString(path); err != nil {
+		panic(err)
+	}
+	return m
+}
+
+func (m *resultsetMerger) SubResults(path string) Merger {
+	var err error
+	m.firstSubResultOnly = false
+	if m.subResultMatchPattern, err = jp.ParseString(path); err != nil {
+		panic(err)
+	}
 	return m
 }
 
