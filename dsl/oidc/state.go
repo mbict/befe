@@ -1,9 +1,9 @@
 package oidc
 
 import (
+	"crypto/rand"
 	"encoding/base64"
 	"github.com/vmihailenco/msgpack/v5"
-	"math/rand"
 )
 
 type urlPathState struct {

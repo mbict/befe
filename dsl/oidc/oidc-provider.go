@@ -98,6 +98,9 @@ func (p *ssoProvider) handleRequest(rw http.ResponseWriter, req *http.Request, n
 	if req.URL.Path == authCallbackPath {
 		jwtToken, idToken, err := p.handleAuthCallback(req)
 		if err != nil {
+			if onInvalidTokenHandler != nil {
+				return onInvalidTokenHandler(rw, req)
+			}
 			return false, err
 		}
 
