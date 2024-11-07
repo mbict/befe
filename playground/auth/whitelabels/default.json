@@ -1,0 +1,21 @@
+{
+  "id": "stalling.app",
+  "domain": "https://accounts.dev.stalling.app",
+  "footer": "2023 Stalling.app door MB-Ict",
+  "title": "Stalling.app",
+
+  "logo": "https://stalling-dev.ams3.cdn.digitaloceanspaces.com/public/stalling-logo.svg",
+  "logo_text": "#FFFFFF",
+  "only_logo": true,
+
+  "header_color": "#0BA5E9",
+  "header_color_highlight": "#37BCF8",
+  "header_color_text": "#FFFFFF",
+  "header_color_text_alt": "#BAE6FC",
+
+  "backdrop": "https://stalling-dev.ams3.cdn.digitaloceanspaces.com/public/login-backdrop2.jpeg",
+  "overlay": "linear-gradient(to bottom right, rgba(13, 165, 250, .85), rgba(13, 165, 250, .65), rgba(13, 165, 233, .35), rgba(150, 150, 220, 0.20))",
+
+  "oidc_url": "https://accounts.dev.stalling.app",
+  "client_id": "3af13afb-87d4-45b2-92f4-b6446cc2e4e6"
+}

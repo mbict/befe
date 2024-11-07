@@ -1,0 +1,21 @@
+{
+  "id": "kwstalletje",
+  "domain": "http://localhost:3000",
+  "footer": "2023 Kwekerij het stalletje",
+  "title": "Kwekerij het stalletje",
+
+  "logo": "/img/kwstalletjelogo.png",
+  "logo_text": "#FFFFFF",
+  "only_logo": false,
+
+  "header_color": "red",
+  "header_color_highlight": "orange",
+  "header_color_text": "#FFFFFF",
+  "header_color_text_alt": "#FFFFFF",
+
+  "backdrop": "https://stalling-dev.ams3.cdn.digitaloceanspaces.com/public/login-backdrop2.jpeg",
+  "overlay": "linear-gradient(to bottom right, rgba(13, 165, 250, .85), rgba(13, 165, 250, .65), rgba(13, 165, 233, .35), rgba(150, 150, 220, 0.20))",
+
+  "oidc_url": "http://localhost:8080",
+  "client_id": "3af13afb-87d4-45b2-92f4-b6446cc2e4e6"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "demo",
+  "domain": "https://demo.dev.stalling.app",
+  "footer": "2023 Demo stalling",
+  "title": "Stalling.APP",
+
+  "logo": "https://stalling-dev.ams3.cdn.digitaloceanspaces.com/public/stalling-logo.svg",
+  "logo_text": "#FFFFFF",
+  "only_logo": true,
+
+  "header_color": "red",
+  "header_color_highlight": "orange",
+  "header_color_text": "#FFFFFF",
+  "header_color_text_alt": "#FFFFFF",
+
+  "backdrop": "https://stalling-dev.ams3.cdn.digitaloceanspaces.com/public/login-backdrop2.jpeg",
+  "overlay": "linear-gradient(to bottom right, rgba(13, 165, 250, .85), rgba(13, 165, 250, .65), rgba(13, 165, 233, .35), rgba(150, 150, 220, 0.20))",
+
+  "oidc_url": "https://demo.dev.stalling.app",
+  "client_id": "fd27c635-9ed0-4fcb-baf6-524e1b1065bb"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "caravanstallingxl",
+  "domain": "https://caravanstallingxl.nl",
+  "footer": "2023 CaravanStallingXL door Stalling.app",
+  "title": "CravanStallingXL",
+
+  "logo": "https://stalling-dev.ams3.cdn.digitaloceanspaces.com/public/logo-stallingxl.png",
+  "logo_text": "#FFFFFF",
+  "only_logo": false,
+
+  "header_color": "red",
+  "header_color_highlight": "orange",
+  "header_color_text": "#FFFFFF",
+  "header_color_text_alt": "#FFFFFF",
+
+  "overlay": "linear-gradient(to bottom right, rgba(150, 0, 0, .85), rgba(180, 0, 0, .65), rgba(180, 0, 0, .35), rgba(180, 0, 50, 0.20))",
+
+  "oidc_url": "https://caravanstallingxl.nl",
+  "client_id": "3af13afb-87d4-45b2-92f4-b6446cc2e4e6"
+}

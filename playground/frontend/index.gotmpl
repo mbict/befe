@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>{{ index .whitelabel "title" }}</title>
+    <meta charset="UTF-8">
+    <meta name="theme-color" content="#0BA5E9">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="description" content="Stalling.app">
+    <style>
+        *:root {
+            --theme-color-header: {{ index .whitelabel "header_color" }};
+            --theme-color-header-highlight: {{ index .whitelabel "header_color_highlight" }};
+            --theme-color-header-text: {{ index .whitelabel "header_color_text" }};
+            --theme-color-header-text-alt: {{ index .whitelabel "header_color_text_alt" }};
+        }
+    </style>
+    <script type="application/json" id="config">{{ toJS (toRawJson .whitelabel) }}</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon/stalling-app-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon/stalling-app-32x32.png">
+    <link rel="icon" type="image/png" sizes="180x180" href="/favicon/stalling-app-32x32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon/stalling-app-android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/favicon/stalling-app-android-chrome-512x512.png">
+    <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="/favicon/stalling-app-apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest" crossorigin="use-credentials">
+    <script type="module" crossorigin src="/assets/{{ .entrypoint }}/{{ .distFiles.JS }}"></script>
+    <link rel="stylesheet" href="/assets/{{ .entrypoint }}/{{ .distFiles.CSS }}">
+</head>
+<body>
+<div id="app"></div>
+</body>
+</html>

@@ -1,0 +1,1 @@
+import{b as o,e as t}from"./index-f92b2378.js";const n=((o,t)=>{const n=o.__vccOpts||o;for(const[r,e]of t)n[r]=e;return n})({},[["render",function(n,r){return o(),t("div",null,"Logout")}]]);export{n as default};
